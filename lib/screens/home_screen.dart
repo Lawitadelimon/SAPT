@@ -64,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: 200,
-                    height: 200,
+                    width: 250,
+                    height: 250,
                     child: CircularProgressIndicator(
                       strokeWidth: 20,
                       color: Colors.blue,
@@ -87,8 +87,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             margin: const EdgeInsets.only(top: 50.0),
             child: Center(
-              child:
-                  TextButton(onPressed: () {}, child: const Text("DAR TANDA")),
+              child: TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "DAR TANDA",
+                    style: TextStyle(color: Colors.blue),
+                  )),
             ),
           )
         ],
