@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sapt/screens/registerPays_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   TextButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RegisterPaysScreen()),
+                        );
+                      },
                       label: const Text("Pagos"),
                       icon: const Icon(Icons.payment),
                       style: TextButton.styleFrom(
