@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "832397850683",
+    "project_id": "sapt-a8ce4",
+    "storage_bucket": "sapt-a8ce4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:832397850683:android:d64ef3e9808790b608c41e",
+        "android_client_info": {
+          "package_name": "com.sapt.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIz9Jx4LWPhxRPML2cE92d2LRAWSru6_I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
