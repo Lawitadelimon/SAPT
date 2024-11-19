@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:832397850683:android:d64ef3e9808790b608c41e",
         "android_client_info": {
-          "package_name": "com.sapt.app"
+          "package_name": "com.example.sapt"
         }
       },
       "oauth_client": [],
