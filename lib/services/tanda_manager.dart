@@ -12,6 +12,7 @@ class TandaManager {
   // Crear una nueva tanda y guardarla en Firebase
   Future<void> crearTanda(String admin, String nombre, int integrantes,
       double monto, String codigo) async {
+    // ignore: unused_local_variable
     DocumentReference tandaRef = await _firestore.collection('tandas').add({
       'admin': admin,
       'nombre': nombre,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sapt/screens/registerPays_screen.dart';
+import 'package:sapt/screens/listaPagosScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => RegisterPaysScreen()),
+                              builder: (context) => ListaPagosScreen()),
                         );
                       },
                       label: const Text("Pagos"),

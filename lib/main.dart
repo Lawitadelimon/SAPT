@@ -1,16 +1,17 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sapt/Screens/welcome_screen.dart';
-import 'package:sapt/firebase_options.dart';
+import 'package:sapt/screens/listaPagosScreen.dart';
+import 'package:sapt/screens/pagosModel.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => PagosModel(),
+      child: const MaterialApp(home: ListaPagosScreen()),
+    ),
   );
-  runApp(const MainApp());
 }
-
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
