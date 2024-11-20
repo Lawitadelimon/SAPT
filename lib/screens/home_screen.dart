@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sapt/screens/registerPays_screen.dart';
+import 'package:sapt/services/tanda_manager.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Tanda tanda;
+
+  const HomeScreen({super.key, required this.tanda});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -15,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
           backgroundColor: Colors.blue,
           titleTextStyle: const TextStyle(color: Colors.white),
-          title: const Text('TANDA 01'),
+          title: Text(widget.tanda.nombre),
           centerTitle: true,
           bottom: PreferredSize(
             preferredSize:
@@ -61,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             margin: const EdgeInsets.only(top: 25.0, bottom: 50.0),
             child: const Center(
-              child: Text("Fecha de hoy: 15 - Nov - 2024"),
+              child: Text("Fecha de hoy: 20 - Nov - 2024"),
             ),
           ),
           Container(
