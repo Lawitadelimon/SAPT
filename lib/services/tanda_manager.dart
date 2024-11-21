@@ -47,16 +47,35 @@ class TandaManager extends ChangeNotifier {
   }
 
   // Unirse a una tanda
-  Future<void> unirseATanda(String tandaId, String usuarioNombre) async {
-    DocumentReference tandaRef = _firestore.collection('tandas').doc(tandaId);
-    DocumentSnapshot tandaSnapshot = await tandaRef.get();
-    if (tandaSnapshot.exists) {
-      List<dynamic> usuarios = tandaSnapshot['usuarios'];
-      if (!usuarios.contains(usuarioNombre)) {
-        usuarios.add(usuarioNombre);
-        await tandaRef.update({'usuarios': usuarios});
-        // notifyListeners no es necesario aquí
-      }
+  Future<void> unirseATanda(String codigo, String usuario) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection('tandas')
+        .where('codigo', isEqualTo: codigo) // Filtra por el campo 'codigo'
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      // Si se encontró alguna tanda con ese código, puede ser que ya exista
+      snapshot.docs.forEach((doc) {
+        List<dynamic> participantes = doc['participantes'];
+        // Verificar si el array contiene al usuarioId y el estado es 'activo'
+        bool usuarioActivo = participantes.any((participante) {
+          return participante['correo'] == usuario;
+        });
+
+        if (!usuarioActivo) {
+          DocumentSnapshot tandaDoc = snapshot.docs[0];
+
+          // Obtener la referencia al documento
+          DocumentReference tandaRef = tandaDoc.reference;
+
+          // Agregar un nuevo participante al array 'participantes'
+          tandaRef.update({
+            'participantes': FieldValue.arrayUnion([
+              {'correo': usuario}
+            ])
+          });
+        } else {}
+      });
     }
   }
 

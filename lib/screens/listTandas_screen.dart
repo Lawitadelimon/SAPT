@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sapt/screens/home_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
+import 'package:sapt/themes/apptheme.dart';
 import 'package:sapt/themes/welcome_styles.dart';
 
 class ListTandasScreen extends StatefulWidget {
@@ -126,7 +127,8 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
         centerTitle: true,
         backgroundColor: Colors.blue,
         titleTextStyle: const TextStyle(color: Colors.white),
-        title: const Text("Lista de tandas"),
+        title: Text("Mis Tandas",
+            style: AppTheme.lightTheme.textTheme.headlineMedium),
         actions: [
           TextButton(
               onPressed: () {
@@ -147,6 +149,9 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
               itemBuilder: (context, index) {
                 Tanda tanda = tandas[index];
                 return ListTile(
+                  leading: IconTheme(
+                      data: AppTheme.lightTheme.iconTheme,
+                      child: const Icon(Icons.payments)),
                   title: Text(tanda.nombre),
                   subtitle: Text("Admin: ${tanda.admin}"),
                   trailing: Text("Monto: \$${tanda.monto}"),
