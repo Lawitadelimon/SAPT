@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sapt/Screens/welcome_screen.dart';
 import 'package:sapt/firebase_options.dart';
-// import 'package:sapt/screens/login_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
 
 Future<void> main() async {
