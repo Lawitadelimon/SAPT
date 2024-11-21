@@ -1,11 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:sapt/screens/registerPays_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
+import 'package:sapt/screens/listaPagosScreen.dart';
 
 class HomeScreen extends StatefulWidget {
-  final Tanda tanda;
+  final String tandaId;
 
-  const HomeScreen({super.key, required this.tanda});
+  const HomeScreen({super.key, required this.tandaId});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -14,11 +15,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final tanda = TandaManager.getTandaRef(widget.tandaId);
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Colors.blue,
           titleTextStyle: const TextStyle(color: Colors.white),
-          title: Text(widget.tanda.nombre),
+          title: Text("Detalles de la tanda"),
           centerTitle: true,
           bottom: PreferredSize(
             preferredSize:
@@ -33,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => RegisterPaysScreen()),
+                              builder: (context) => const ListaPagosScreen()),
                         );
                       },
                       label: const Text("Pagos"),
@@ -59,53 +61,34 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           )),
-      body: ListView(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 25.0, bottom: 50.0),
-            child: const Center(
-              child: Text("Fecha de hoy: 20 - Nov - 2024"),
+      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        future: tanda.get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return Center(child: Text('Tanda no encontrada'));
+          }
+
+          final tandaData = snapshot.data!.data();
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Nombre: ${tandaData?['nombre']}',
+                    style: TextStyle(fontSize: 18)),
+                Text('Administrador: ${tandaData?['admin']}',
+                    style: TextStyle(fontSize: 18)),
+                Text('Monto semanal: ${tandaData?['monto']}'),
+              ],
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 50.0, bottom: 50.0),
-            child: const Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 250,
-                    height: 250,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 20,
-                      color: Colors.blue,
-                      value: 0.7,
-                    ),
-                  ),
-                  Column(
-                    children: [
-                      Text("No. 3"),
-                      Text("Marina Portillo"),
-                      Text("20 - Nov - 2024"),
-                      Text("70%")
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 50.0),
-            child: Center(
-              child: TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    "DAR TANDA",
-                    style: TextStyle(color: Colors.blue),
-                  )),
-            ),
-          )
-        ],
+          );
+        },
       ),
     );
   }

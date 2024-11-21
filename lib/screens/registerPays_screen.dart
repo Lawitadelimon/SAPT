@@ -9,13 +9,11 @@ class RegisterPaysScreen extends StatefulWidget {
 class _RegisterPaysScreenState extends State<RegisterPaysScreen> {
   // Lista de registros donde cada registro es un Map que contiene Nombre, Pago y Fecha
   List<Map<String, String>> registros = [];
-
   // Método para mostrar un cuadro de diálogo y agregar un registro
   void _agregarRegistro() {
     TextEditingController nombreController = TextEditingController();
     TextEditingController pagoController = TextEditingController();
     TextEditingController fechaController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {

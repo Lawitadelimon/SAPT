@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sapt/screens/home_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
 import 'package:sapt/themes/welcome_styles.dart';
@@ -68,15 +69,16 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 String nombre = _textControllerName.text;
                 String codigo = _textControllerCodigo.text;
 
                 try {
                   int inte = int.parse(_textControllerInt.text);
                   double monto = double.parse(_textControllerMonto.text);
-                  TandaManager.instance.crearTanda(
-                      "legna246.dav@gmail.com", nombre, inte, monto, codigo);
+                  await Provider.of<TandaManager>(context, listen: false)
+                      .crearTanda("legna246.dav@gmail.com", nombre, inte, monto,
+                          codigo);
                   Navigator.of(context).pop();
                   clearControllers();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -134,40 +136,31 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
         ],
       ),
       body: Stack(children: [
-        StreamBuilder<List<Tanda>>(
-          stream: TandaManager.instance.obtenerTandas(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text("Error: ${snapshot.error}"));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        Consumer<TandaManager>(
+          builder: (context, tandaManager, child) {
+            final tandas = tandaManager.tandas;
+            if (tandas.isEmpty) {
               return const Center(child: Text("No hay tandas disponibles"));
-            } else {
-              List<Tanda> tandas = snapshot.data!;
-              return ListView.builder(
-                itemCount: tandas.length,
-                itemBuilder: (context, index) {
-                  Tanda tanda = tandas[index];
-                  return ListTile(
-                    leading: const IconTheme(
-                        data: IconThemeData(color: Colors.blue),
-                        child: Icon(Icons.payment)),
-                    title: Text(tanda.nombre),
-                    subtitle: Text("Admin: ${tanda.admin}"),
-                    trailing: Text("Monto: \$${tanda.monto}"),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(tanda: tanda),
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
             }
+            return ListView.builder(
+              itemCount: tandas.length,
+              itemBuilder: (context, index) {
+                Tanda tanda = tandas[index];
+                return ListTile(
+                  title: Text(tanda.nombre),
+                  subtitle: Text("Admin: ${tanda.admin}"),
+                  trailing: Text("Monto: \$${tanda.monto}"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomeScreen(tandaId: tanda.id),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
           },
         ),
         Positioned(
