@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sapt/Screens/welcome_screen.dart';
 import 'package:sapt/firebase_options.dart';
+<<<<<<< HEAD
+import 'package:sapt/screens/login_screen.dart';
+=======
 import 'package:sapt/services/tanda_manager.dart';
+>>>>>>> 1471c49bd1e0f11f275d4c95ab16792564d1afc8
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +31,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: WelcomeScreen(),
+      home: LoginScreen(),
     );
   }
 }
