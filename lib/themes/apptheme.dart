@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Colores personalizados
   static const Color primary = Color.fromARGB(255, 137, 145, 255);
-  static const Color primaryVariant = Color(0xFF3700B3);
+  static const Color primaryVariant = Color.fromARGB(255, 1, 140, 255);
   static const Color secondary = Color(0xFF03DAC6);
-  static const Color background = Color(0xFFF5F5F5);
+  static const Color background = Color.fromARGB(255, 202, 233, 247);
   static const Color surface = Colors.white;
   static const Color error = Color.fromARGB(255, 187, 0, 34);
-  static const Color textPrimary = Colors.black;
+  static const Color textPrimary = Color.fromARGB(255, 255, 255, 255);
   static const Color textSecondary = Colors.grey;
   static const Color button = Color.fromARGB(255, 137, 145, 255);
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,19 +20,19 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                
-                const Icon(
-                  Icons.lock_outline,
-                  size: 100,
-                  color: Colors.lightBlue,
+                const Text(
+                  'REGISTRO',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 100, 91, 218),
+                  ),
                 ),
                 const SizedBox(height: 30),
-                
-
                 TextField(
                   decoration: InputDecoration(
-                    labelText: 'Correo',
-                    prefixIcon: const Icon(Icons.email),
+                    labelText: 'Nombre completo',
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey[400]!),
                     ),
@@ -44,13 +44,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
-
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Correo',
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey[400]!),
                     ),
@@ -61,19 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fillColor: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                  },
-                  child: const Text(
-                    '¿Olvidaste tu contraseña?',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () {
                   },
@@ -85,24 +84,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Iniciar Sesión',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 153, 141, 255),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    'Regístrate ahora',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white, 
                     ),
-                  ),
-                  child: const Text(
-                    'Registrarse',
-                    style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                 ),
               ],
@@ -114,4 +100,4 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-void main() => runApp(const MaterialApp(home: LoginScreen()));
+void main() => runApp(const MaterialApp(home: RegisterScreen()));
