@@ -1,81 +1,86 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 
-class TandaManager extends ChangeNotifier {
+typedef TandaListener = void Function(List<Tanda> tandas);
+
+class TandaManager {
+  // Singleton
   TandaManager._privateConstructor();
-  // Instancia Singleton
-  static final TandaManager _instance = TandaManager._internal();
+  static final TandaManager _instance = TandaManager._privateConstructor();
+  // Acceder a la instancia única
+  static TandaManager get instance => _instance;
 
-  factory TandaManager() {
-    return _instance;
-  }
-
-  TandaManager._internal() {
-    _init();
-  }
-
+  // Instancia de Firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Tanda> _tandas = [];
 
-  List<Tanda> get tandas => _tandas;
+  // Implementación de observer
+  // Lista de listeners para notificar sobre cambios
+  final List<TandaListener> _listeners = [];
 
-  // Inicializar escuchando cambios en Firestore
-  void _init() {
+  // Agregar un listener
+  void agregarListener(TandaListener listener) {
+    _listeners.add(listener);
+  }
+
+  // Remover un listener
+  void removerListener(TandaListener listener) {
+    _listeners.remove(listener);
+  }
+
+  // Notificar a todos los listeners
+  void _notificarListeners(List<Tanda> tandas) {
+    for (var listener in _listeners) {
+      listener(tandas);
+    }
+  }
+
+  // Obtener tandas y observar cambios en Firebase
+  void observarTandas() {
     _firestore.collection('tandas').snapshots().listen((snapshot) {
-      _tandas = snapshot.docs.map((doc) => Tanda.fromFirestore(doc)).toList();
-      notifyListeners(); // Notifica a los observadores (widgets)
+      final tandas = snapshot.docs.map((doc) {
+        return Tanda.fromFirestore(doc);
+      }).toList();
+      _notificarListeners(tandas);
     });
   }
 
-  static DocumentReference<Map<String, dynamic>> getTandaRef(String tandaId) {
-    return FirebaseFirestore.instance.collection('tandas').doc(tandaId);
-  }
-
-  // Crear una nueva tanda
-  Future<void> crearTanda(String admin, String nombre, int inte, double monto,
-      String codigo) async {
-    await _firestore.collection('tandas').add({
+  // Crear una nueva tanda y guardarla en Firebase
+  Future<void> crearTanda(String admin, String nombre, int integrantes,
+      double monto, String codigo) async {
+    DocumentReference tandaRef = await _firestore.collection('tandas').add({
       'admin': admin,
       'nombre': nombre,
-      'inte': inte,
+      'integrantes': integrantes,
       'monto': monto,
       'codigo': codigo,
+      'turno': 1,
       'participantes': [],
-      'turnoActual': null,
     });
-    // No es necesario llamar a notifyListeners aquí, ya que Firestore lo hace automáticamente
+    print("Tanda '${nombre}' creada exitosamente en Firebase.");
   }
 
-  // Unirse a una tanda
-  Future<void> unirseATanda(String codigo, String usuario) async {
-    QuerySnapshot snapshot = await _firestore
+  // Unirse a una tanda y actualizarla en Firebase
+  Future<bool> unirseATanda(String codigo, String usuario) async {
+    QuerySnapshot tandaQuery = await _firestore
         .collection('tandas')
-        .where('codigo', isEqualTo: codigo) // Filtra por el campo 'codigo'
+        .where('codigo', isEqualTo: codigo)
         .get();
-
-    if (snapshot.docs.isNotEmpty) {
-      // Si se encontró alguna tanda con ese código, puede ser que ya exista
-      snapshot.docs.forEach((doc) {
-        List<dynamic> participantes = doc['participantes'];
-        // Verificar si el array contiene al usuarioId y el estado es 'activo'
-        bool usuarioActivo = participantes.any((participante) {
-          return participante['correo'] == usuario;
+    if (tandaQuery.docs.isNotEmpty) {
+      var tandaDoc = tandaQuery.docs.first;
+      List participantes = List.from(tandaDoc['participantes']);
+      if (!participantes.contains(usuario)) {
+        participantes.add(usuario);
+        await tandaDoc.reference.update({
+          'participantes': participantes,
         });
-
-        if (!usuarioActivo) {
-          DocumentSnapshot tandaDoc = snapshot.docs[0];
-
-          // Obtener la referencia al documento
-          DocumentReference tandaRef = tandaDoc.reference;
-
-          // Agregar un nuevo participante al array 'participantes'
-          tandaRef.update({
-            'participantes': FieldValue.arrayUnion([
-              {'correo': usuario}
-            ])
-          });
-        } else {}
-      });
+        print("${usuario} se unió a la tanda '$codigo'.");
+        return true;
+      } else {
+        print("${usuario} ya está en la tanda '$codigo'.");
+        return false;
+      }
+    } else {
+      print("La tanda '$codigo' no existe.");
+      return false;
     }
   }
 
@@ -88,63 +93,46 @@ class TandaManager extends ChangeNotifier {
               return Tanda.fromFirestore(doc);
             }).toList());
   }
-
-  // Actualizar el monto semanal de una tanda
-  Future<void> actualizarMontoSemanal(String tandaId, double nuevoMonto) async {
-    await _firestore
-        .collection('tandas')
-        .doc(tandaId)
-        .update({'montoSemanal': nuevoMonto});
-    // notifyListeners no es necesario aquí
-  }
-
-  // Avanzar al siguiente turno
-  Future<void> avanzarTurno(String tandaId) async {
-    DocumentReference tandaRef = _firestore.collection('tandas').doc(tandaId);
-    DocumentSnapshot tandaSnapshot = await tandaRef.get();
-    if (tandaSnapshot.exists) {
-      Map<String, dynamic> data = tandaSnapshot.data() as Map<String, dynamic>;
-      List<dynamic> usuarios = data['usuarios'];
-      String? turnoActual = data['turnoActual'];
-      if (usuarios.isNotEmpty) {
-        int currentIndex = usuarios.indexOf(turnoActual);
-        int nextIndex = (currentIndex + 1) % usuarios.length;
-        String nextTurn = usuarios[nextIndex];
-        await tandaRef.update({'turnoActual': nextTurn});
-      }
-    }
-  }
 }
 
 // Clase para representar una Tanda
 class Tanda {
-  final String id;
   final String admin;
   final String nombre;
+  final String codigo;
   final int integrantes;
   final double monto;
+  final int turno;
   final List<String> participantes;
-  final String? turnoActual;
-
   Tanda(
-      {required this.id,
-      required this.admin,
+      {required this.admin,
+      required this.codigo,
       required this.nombre,
       required this.integrantes,
       required this.monto,
       required this.participantes,
-      this.turnoActual});
+      required this.turno});
 
   // Crear una tanda desde Firebase
   factory Tanda.fromFirestore(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
     return Tanda(
-        id: doc.id,
-        admin: data['admin'],
-        nombre: data['nombre'],
-        integrantes: data['integrantes'],
-        monto: data['monto'],
-        participantes: List<String>.from(data['participantes']),
-        turnoActual: data['turnoActual']);
+      admin: data['admin'],
+      codigo: data['codigo'],
+      nombre: data['nombre'],
+      integrantes: data['integrantes'],
+      monto: (data['monto'] is int)
+          ? (data['monto'] as int).toDouble()
+          : data['monto'], // Conversión de int a double
+      turno: data['turno'],
+      participantes: List<String>.from(data['participantes']),
+    );
   }
 }
+
+// Clase para representar un Usuario
+// class Usuario {
+//   final String nombre;
+//   final String email;
+//   Usuario({required this.nombre, required this.email});
+// }

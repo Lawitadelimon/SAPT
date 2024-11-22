@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:sapt/screens/home_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
 import 'package:sapt/themes/apptheme.dart';
@@ -13,6 +12,55 @@ class ListTandasScreen extends StatefulWidget {
 }
 
 class _ListTandasScreenState extends State<ListTandasScreen> {
+  List<Tanda> _tandas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Registrar el listener al iniciar la pantalla
+    TandaManager.instance.agregarListener(_actualizarTandas);
+    // Comenzar a observar tandas
+    TandaManager.instance.observarTandas();
+    try {
+      // Aquí llamas a tu lógica para obtener tandas
+      TandaManager.instance.obtenerTandas();
+      print("Stream de tandas inicializado correctamente.");
+    } catch (e, stackTrace) {
+      print("Error al inicializar el stream de tandas: $e");
+      print("Stack trace: $stackTrace");
+    }
+  }
+
+  @override
+  void dispose() {
+    // Remover el listener al salir de la pantalla
+    TandaManager.instance.removerListener(_actualizarTandas);
+
+    // Liberar el controlador cuando el widget se destruye
+    _textControllerName.dispose();
+    _textControllerInt.dispose();
+    _textControllerMonto.dispose();
+    _textControllerCodigo.dispose();
+    super.dispose();
+  }
+
+  // Método para actualizar la lista de tandas
+  void _actualizarTandas(List<Tanda> tandas) {
+    try {
+      setState(() {
+        _tandas = tandas;
+        // print("Tandas actualizadas: ${_tandas.length}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('¡Ha ocurrido una actualización en las tandas!')),
+        );
+      });
+    } catch (e, stackTrace) {
+      print("Error al actualizar las tandas: $e");
+      print("Stack trace: $stackTrace");
+    }
+  }
+
   TextEditingController _textControllerName = TextEditingController();
   TextEditingController _textControllerInt = TextEditingController();
   TextEditingController _textControllerMonto = TextEditingController();
@@ -20,7 +68,6 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
 
   void _unirseTanda() {
     TextEditingController codigoController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -37,7 +84,21 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                if (await TandaManager.instance
+                    .unirseATanda(codigoController.text, "Javier Lopez Co")) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Te has unido a la tanda!')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Ha ocurrido un error. Intenta de nuevo más tarde')),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
               style: WelcomeStyles.buttonStyle,
               child: const Text("Unirme"),
             ),
@@ -70,16 +131,14 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
           ),
           actions: [
             ElevatedButton(
-              onPressed: () async {
+              onPressed: () {
                 String nombre = _textControllerName.text;
                 String codigo = _textControllerCodigo.text;
-
                 try {
                   int inte = int.parse(_textControllerInt.text);
                   double monto = double.parse(_textControllerMonto.text);
-                  await Provider.of<TandaManager>(context, listen: false)
-                      .crearTanda("legna246.dav@gmail.com", nombre, inte, monto,
-                          codigo);
+                  TandaManager.instance.crearTanda(
+                      "legna246.dav@gmail.com", nombre, inte, monto, codigo);
                   Navigator.of(context).pop();
                   clearControllers();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -108,16 +167,6 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
   }
 
   @override
-  void dispose() {
-    // Liberar el controlador cuando el widget se destruye
-    _textControllerName.dispose();
-    _textControllerInt.dispose();
-    _textControllerMonto.dispose();
-    _textControllerCodigo.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const Drawer(
@@ -138,34 +187,40 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
         ],
       ),
       body: Stack(children: [
-        Consumer<TandaManager>(
-          builder: (context, tandaManager, child) {
-            final tandas = tandaManager.tandas;
-            if (tandas.isEmpty) {
+        StreamBuilder<List<Tanda>>(
+          stream: TandaManager.instance.obtenerTandas(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const Center(child: Text("No hay tandas disponibles"));
+            } else {
+              List<Tanda> tandas = snapshot.data!;
+              return ListView.builder(
+                itemCount: tandas.length,
+                itemBuilder: (context, index) {
+                  Tanda tanda = tandas[index];
+                  return ListTile(
+                    leading: const IconTheme(
+                        data: IconThemeData(color: Colors.blue),
+                        child: Icon(Icons.payment)),
+                    title: Text(tanda.nombre),
+                    subtitle: Text("Admin: ${tanda.admin}"),
+                    trailing: Text("Monto: \$${tanda.monto}"),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(tanda: tanda),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
             }
-            return ListView.builder(
-              itemCount: tandas.length,
-              itemBuilder: (context, index) {
-                Tanda tanda = tandas[index];
-                return ListTile(
-                  leading: IconTheme(
-                      data: AppTheme.lightTheme.iconTheme,
-                      child: const Icon(Icons.payments)),
-                  title: Text(tanda.nombre),
-                  subtitle: Text("Admin: ${tanda.admin}"),
-                  trailing: Text("Monto: \$${tanda.monto}"),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomeScreen(tandaId: tanda.id),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
           },
         ),
         Positioned(
