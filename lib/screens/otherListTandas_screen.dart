@@ -15,52 +15,6 @@ class OtherListTandasScreen extends StatefulWidget {
 }
 
 class _OtherListTandasScreenState extends State<OtherListTandasScreen> {
-  List<Tanda> _tandas = [];
-
-  @override
-  void initState() {
-    super.initState();
-    // Registrar el listener al iniciar la pantalla
-    TandaManager.instance.agregarListener(_actualizarTandas);
-    // Comenzar a observar tandas
-    TandaManager.instance
-        .observarTandas(FirebaseAuth.instance.currentUser!.email!);
-    // try {
-    //   // Aquí llamas a tu lógica para obtener tandas
-    //   TandaManager.instance
-    //       .obtenerTandas(FirebaseAuth.instance.currentUser!.email!);
-    //   print("Stream de tandas inicializado correctamente.");
-    // } catch (e, stackTrace) {
-    //   print("Error al inicializar el stream de tandas: $e");
-    //   print("Stack trace: $stackTrace");
-    // }
-  }
-
-  @override
-  void dispose() {
-    // Remover el listener al salir de la pantalla
-    TandaManager.instance.removerListener(_actualizarTandas);
-
-    super.dispose();
-  }
-
-  // Método para actualizar la lista de tandas
-  void _actualizarTandas(List<Tanda> tandas) {
-    try {
-      setState(() {
-        _tandas = tandas;
-        // print("Tandas actualizadas: ${_tandas.length}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('¡Ha ocurrido una actualización en las tandas!')),
-        );
-      });
-    } catch (e, stackTrace) {
-      print("Error al actualizar las tandas: $e");
-      print("Stack trace: $stackTrace");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

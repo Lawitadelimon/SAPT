@@ -54,7 +54,7 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
     try {
       setState(() {
         _tandas = tandas;
-        // print("Tandas actualizadas: ${_tandas.length}");
+        print("Tandas actualizadas: ${_tandas.length}");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('¡Ha ocurrido una actualización en las tandas!')),
