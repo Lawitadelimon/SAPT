@@ -1,4 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
+import 'package:sapt/screens/listTandas_screen.dart';
+import 'package:sapt/screens/register_screen.dart';
+import 'package:sapt/utils/auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -8,6 +13,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthService _auth = AuthService();
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,16 +30,14 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                
                 const Icon(
                   Icons.lock_outline,
                   size: 100,
                   color: Colors.lightBlue,
                 ),
                 const SizedBox(height: 30),
-                
-
                 TextField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     labelText: 'Correo',
                     prefixIcon: const Icon(Icons.email),
@@ -44,10 +52,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
-
                 TextField(
                   obscureText: true,
+                  controller: passController,
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
                     prefixIcon: const Icon(Icons.lock),
@@ -63,8 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
                 TextButton(
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   child: const Text(
                     '¿Olvidaste tu contraseña?',
                     style: TextStyle(
@@ -75,7 +81,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final email = emailController.text;
+                    final pass = passController.text;
+
+                    var result =
+                        await _auth.signInEmailAndPassword(email, pass);
+
+                    if (result == 1) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cuenta no encontrada')),
+                      );
+                    } else if (result == 2) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Contraseña incorrecta')),
+                      );
+                    } else if (result != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ListTandasScreen(),
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 65, 63, 204),
@@ -92,6 +120,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterScreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 153, 141, 255),
@@ -102,7 +136,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: const Text(
                     'Registrarse',
-                    style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 255, 255, 255)),
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                 ),
               ],
@@ -113,5 +149,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-void main() => runApp(const MaterialApp(home: LoginScreen()));

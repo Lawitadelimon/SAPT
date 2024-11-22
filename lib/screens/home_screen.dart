@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sapt/screens/registerPays_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
 import 'package:sapt/screens/listaPagosScreen.dart';
 
@@ -29,21 +30,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   TextButton.icon(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ListaPagosScreen()),
-                        );
+                        _showIntegrantes();
                       },
-                      label: const Text("Pagos"),
-                      icon: const Icon(Icons.payment),
+                      label: const Text("Integrantes"),
+                      icon: const Icon(Icons.person),
                       style: TextButton.styleFrom(
                           iconColor: Colors.white,
                           foregroundColor: Colors.white)),
                   TextButton.icon(
-                      onPressed: () {},
-                      label: const Text("Tandas"),
-                      icon: const Icon(Icons.person),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RegisterPaysScreen()),
+                        );
+                      },
+                      label: const Text("Pagos"),
+                      icon: const Icon(Icons.payment),
                       style: TextButton.styleFrom(
                           iconColor: Colors.white,
                           foregroundColor: Colors.white)),
@@ -107,5 +110,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _showIntegrantes() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Integrantes de la tanda"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [integrantes()],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cerrar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  integrantes() {
+    if (widget.tanda.participantes.isNotEmpty) {
+      for (String inte in widget.tanda.participantes) {
+        return Text(inte);
+      }
+    } else {
+      return const Text("No existen integrantes");
+    }
   }
 }

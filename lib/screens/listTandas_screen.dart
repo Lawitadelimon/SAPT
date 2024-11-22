@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sapt/screens/home_screen.dart';
+import 'package:sapt/screens/login_screen.dart';
+import 'package:sapt/screens/otherListTandas_screen.dart';
 import 'package:sapt/services/tanda_manager.dart';
 import 'package:sapt/themes/apptheme.dart';
 import 'package:sapt/themes/welcome_styles.dart';
@@ -20,15 +23,17 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
     // Registrar el listener al iniciar la pantalla
     TandaManager.instance.agregarListener(_actualizarTandas);
     // Comenzar a observar tandas
-    TandaManager.instance.observarTandas();
-    try {
-      // Aquí llamas a tu lógica para obtener tandas
-      TandaManager.instance.obtenerTandas();
-      print("Stream de tandas inicializado correctamente.");
-    } catch (e, stackTrace) {
-      print("Error al inicializar el stream de tandas: $e");
-      print("Stack trace: $stackTrace");
-    }
+    TandaManager.instance
+        .observarTandas(FirebaseAuth.instance.currentUser!.email!);
+    // try {
+    //   // Aquí llamas a tu lógica para obtener tandas
+    //   TandaManager.instance
+    //       .obtenerTandas(FirebaseAuth.instance.currentUser!.email!);
+    //   print("Stream de tandas inicializado correctamente.");
+    // } catch (e, stackTrace) {
+    //   print("Error al inicializar el stream de tandas: $e");
+    //   print("Stack trace: $stackTrace");
+    // }
   }
 
   @override
@@ -66,54 +71,6 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
   TextEditingController _textControllerMonto = TextEditingController();
   TextEditingController _textControllerCodigo = TextEditingController();
 
-  void _unirseTanda() {
-    TextEditingController codigoController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Unirme a una tanda"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: codigoController,
-                decoration: const InputDecoration(labelText: "Código"),
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () async {
-                if (await TandaManager.instance
-                    .unirseATanda(codigoController.text, "Javier Lopez Co")) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Te has unido a la tanda!')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text(
-                            'Ha ocurrido un error. Intenta de nuevo más tarde')),
-                  );
-                }
-                Navigator.of(context).pop();
-              },
-              style: WelcomeStyles.buttonStyle,
-              child: const Text("Unirme"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("Cancelar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _createTanda() {
     showDialog(
       context: context,
@@ -138,7 +95,11 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
                   int inte = int.parse(_textControllerInt.text);
                   double monto = double.parse(_textControllerMonto.text);
                   TandaManager.instance.crearTanda(
-                      "legna246.dav@gmail.com", nombre, inte, monto, codigo);
+                      FirebaseAuth.instance.currentUser!.email!,
+                      nombre,
+                      inte,
+                      monto,
+                      codigo);
                   Navigator.of(context).pop();
                   clearControllers();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -169,26 +130,70 @@ class _ListTandasScreenState extends State<ListTandasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const Drawer(
-        child: Text("Hola"),
+      drawer: Drawer(
+        child: Container(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            children: [
+              ListTile(
+                leading: IconTheme(
+                    data: AppTheme.lightTheme.iconTheme,
+                    child: const Icon(Icons.payments)),
+                title: const Text("Mis tandas"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ListTandasScreen(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: IconTheme(
+                    data: AppTheme.lightTheme.iconTheme,
+                    child: const Icon(Icons.payments)),
+                title: const Text("Tandas a las que pertenezco"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OtherListTandasScreen(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: IconTheme(
+                    data: AppTheme.lightTheme.iconTheme,
+                    child: const Icon(Icons.logout)),
+                title: const Text("Cerrar sesión"),
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+              )
+            ],
+          ),
+        ),
       ),
       appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-        titleTextStyle: const TextStyle(color: Colors.white),
-        title: Text("Mis Tandas",
-            style: AppTheme.lightTheme.textTheme.headlineMedium),
-        actions: [
-          TextButton(
-              onPressed: () {
-                _unirseTanda();
-              },
-              child: const Text("Código"))
-        ],
-      ),
+          centerTitle: true,
+          backgroundColor: Colors.blue,
+          titleTextStyle: const TextStyle(color: Colors.white),
+          title: Text("Mis Tandas",
+              style: AppTheme.lightTheme.textTheme.headlineMedium)),
       body: Stack(children: [
         StreamBuilder<List<Tanda>>(
-          stream: TandaManager.instance.obtenerTandas(),
+          stream: TandaManager.instance
+              .obtenerTandas(FirebaseAuth.instance.currentUser!.email!),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());

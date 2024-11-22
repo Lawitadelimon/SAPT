@@ -14,28 +14,34 @@ class TandaManager {
 
   // Implementación de observer
   // Lista de listeners para notificar sobre cambios
-  final List<TandaListener> _listeners = [];
+  final List<TandaListener> _listeners1 = [];
 
   // Agregar un listener
   void agregarListener(TandaListener listener) {
-    _listeners.add(listener);
+    _listeners1.add(listener);
   }
 
   // Remover un listener
   void removerListener(TandaListener listener) {
-    _listeners.remove(listener);
+    _listeners1.remove(listener);
   }
 
   // Notificar a todos los listeners
   void _notificarListeners(List<Tanda> tandas) {
-    for (var listener in _listeners) {
+    for (var listener in _listeners1) {
       listener(tandas);
     }
   }
 
   // Obtener tandas y observar cambios en Firebase
-  void observarTandas() {
-    _firestore.collection('tandas').snapshots().listen((snapshot) {
+  void observarTandas(String admin) {
+    _firestore
+        .collection('tandas')
+        .where('admin',
+            isEqualTo:
+                admin) // Cambia 'admin' y 'nombreDelAdmin' según lo que necesites
+        .snapshots()
+        .listen((snapshot) {
       final tandas = snapshot.docs.map((doc) {
         return Tanda.fromFirestore(doc);
       }).toList();
@@ -85,9 +91,24 @@ class TandaManager {
   }
 
   // Obtener todas las tandas activas
-  Stream<List<Tanda>> obtenerTandas() {
+  Stream<List<Tanda>> obtenerTandas(String admin) {
     return _firestore
         .collection('tandas')
+        .where('admin',
+            isEqualTo: admin) // Cambia 'admin' y 'nombreDelAdmin' según tu caso
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              return Tanda.fromFirestore(doc);
+            }).toList());
+  }
+
+  // Obtener todas las tandas activas
+  Stream<List<Tanda>> obtenerTandasPert(String inte) {
+    return _firestore
+        .collection('tandas')
+        .where('participantes',
+            arrayContains:
+                inte) // Cambia 'nombreDelUsuario' al valor que buscas
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
               return Tanda.fromFirestore(doc);
